@@ -7,7 +7,7 @@ package frc.robot;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.commands.Autos;
 import frc.robot.commands.ExampleCommand;
-import frc.robot.subsystems.ExampleSubsystem;
+import frc.robot.subsystems.TankDrive;
 
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 
@@ -30,7 +30,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
  */
 public class RobotContainer {
   // The robot's subsystems and commands are defined here...
-  private final ExampleSubsystem m_exampleSubsystem = new ExampleSubsystem();
+  private final TankDrive johnSubsystem = new TankDrive();
   
   private final CommandXboxController johnController = new CommandXboxController(0);
       /** The container for the robot. Contains subsystems, OI devices, and commands. */
@@ -50,27 +50,27 @@ public class RobotContainer {
    */
   private void configureBindings() {
     // Schedule `ExampleCommand` when `exampleCondition` changes to `true`
-    new Trigger(m_exampleSubsystem::exampleCondition)
-        .onTrue(new ExampleCommand(m_exampleSubsystem));
+    new Trigger(johnSubsystem::exampleCondition)
+        .onTrue(new ExampleCommand(johnSubsystem));
 
     // Schedule `exampleMethodCommand` when the Xbox controller's B button is pressed,
     // cancelling on release.
    
     //johnController.b().onTrue(m_exampleSubsystem.johnMoveForward()).onFalse(m_exampleSubsystem.johnStop());
 
-    johnController.a().onTrue(m_exampleSubsystem.johnMove10Feet(1.0));
+    johnController.a().onTrue(johnSubsystem.johnMoveSetDistance(20.0));
 
     //johnController.x().whileTrue(m_exampleSubsystem.johnTurnLeft()).onFalse(m_exampleSubsystem.johnStop());
 
     //johnController.b().whileTrue(m_exampleSubsystem.johnTurnRight()).onFalse(m_exampleSubsystem.johnStop());
     
-    m_exampleSubsystem.setDefaultCommand(m_exampleSubsystem.johnMove(()->johnController.getRightX(), ()->johnController.getLeftY()));
+    johnSubsystem.setDefaultCommand(johnSubsystem.johnMove(()->johnController.getRightX(), ()->johnController.getLeftY()).withInterruptBehavior(Command.InterruptionBehavior.kCancelSelf));
 
     //CommandScheduler.getInstance().setDefaultCommand(m_exampleSubsystem,m_exampleSubsystem.johnMove(()->johnController.getLeftX(), ()->johnController.getLeftY()));
     SmartDashboard.putNumber("YAxis", johnController.getLeftX());
     SmartDashboard.putNumber("XAxis", johnController.getLeftX());
-    SmartDashboard.putNumber("johnRightEncoder Position", m_exampleSubsystem.johnRightEncoder.getPosition());
-    SmartDashboard.putNumber("johnLeftEncoder Position", m_exampleSubsystem.johnLeftEncoder.getPosition());
+    SmartDashboard.putNumber("johnRightEncoder Position", johnSubsystem.johnRightEncoder.getPosition());
+    SmartDashboard.putNumber("johnLeftEncoder Position", johnSubsystem.johnLeftEncoder.getPosition());
 
   }
 
@@ -81,6 +81,6 @@ public class RobotContainer {
    */
   public Command getAutonomousCommand() {
     // An example command will be run in autonomous
-    return Autos.exampleAuto(m_exampleSubsystem);
+    return Autos.exampleAuto(johnSubsystem);
   }
 }

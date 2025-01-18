@@ -19,25 +19,29 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.RepeatCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.RobotContainer;
 
-public class ExampleSubsystem extends SubsystemBase {
+public class TankDrive extends SubsystemBase {
   /** Creates a new ExampleSubsystem. */
   private final SparkMax johnRightMotor = new SparkMax(3, MotorType.kBrushless);
   private final SparkMax johnLeftMotor = new SparkMax(2, MotorType.kBrushless);
 
-  private final SparkMaxConfig johnSMConfig = new SparkMaxConfig();
   public final SparkRelativeEncoder johnRightEncoder = (SparkRelativeEncoder) johnRightMotor.getEncoder();
   public final SparkRelativeEncoder johnLeftEncoder = (SparkRelativeEncoder) johnLeftMotor.getEncoder();
-  private final PIDController johnPIDController = new PIDController(0, 0, 0);
+
+  private final SparkMaxConfig johnSMConfig = new SparkMaxConfig(); // configuration for the right motor
+
+  private final PIDController johnPIDController = new PIDController(0.25, 0.1, 0); // ADD PROPER VALUES!!!!!!
 
   DifferentialDrive johnDDrive = new DifferentialDrive(johnLeftMotor, johnRightMotor);
-  public ExampleSubsystem() {
+  public TankDrive() {
     johnSMConfig.inverted(true);
     johnRightMotor.configure(johnSMConfig, null, null);
-    johnSMConfig.idleMode(IdleMode.kBrake);
+    johnSMConfig.idleMode(IdleMode.kBrake); // makes motors brake as soon as it gets unpowered
   }
 
   /**
@@ -64,32 +68,12 @@ public class ExampleSubsystem extends SubsystemBase {
     return false;
   }
 
-boolean forward = false;
-boolean backward = false;
-boolean right = false;
-boolean left = false;
 
   @Override
   public void periodic() {
     SmartDashboard.putNumber("Right Encoder Value",johnRightEncoder.getPosition());
-    /* 
-    if (backward == true) {
-      forward = false;
-      johnDDrive.arcadeDrive(-0.25, 0);
-    }
-
-    if (right == true) {
-      left = false;
-      johnDDrive.arcadeDrive(0.1, 10);
-    }
-
-    if (left == true) {
-      right = false;
-      johnDDrive.arcadeDrive(0.1, -10);
-    }
-
-    */
     // This method will be called once per scheduler run
+    SmartDashboard.putBoolean("At setpoint?", johnPIDController.atSetpoint());
   }
 
   @Override
@@ -103,21 +87,30 @@ boolean left = false;
     });
 
     cmd.addRequirements(this);
+    
 
     return cmd;
   }
 
-  public Command johnMove10Feet(Double johnRotations) {
-    return new InstantCommand(()-> {
-      
-    });
-  }
+  public Command johnMoveSetDistance(double desiredDistance    /* in feet */) {
 
-  public double johnMoveSetDistance(double desiredDistance    /* in feet */) {
 
-   // johnPIDController.setSetpoint(desiredDistance);
-    //johnPIDController.setTolerance(0.25);
-    return  0; 
+    Command cmd = new InstantCommand(() -> {
+      johnPIDController.setSetpoint(johnLeftEncoder.getPosition() + desiredDistance);
+      johnPIDController.setTolerance(0.25);
+    }).andThen(new RepeatCommand(Commands.runOnce(() -> {
+      double h = johnPIDController.calculate(johnLeftEncoder.getPosition());
+
+      johnLeftMotor.setVoltage(h);
+      johnRightMotor.setVoltage(h);
+
+      SmartDashboard.putNumber("Voltage", h);
+
+    })).until(()->johnPIDController.atSetpoint()));
+
+    cmd.addRequirements(this);
+
+    return cmd;
   }
 
 /*
