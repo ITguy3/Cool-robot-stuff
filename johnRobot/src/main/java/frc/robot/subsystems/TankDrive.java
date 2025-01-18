@@ -94,7 +94,6 @@ public class TankDrive extends SubsystemBase {
 
   public Command johnMoveSetDistance(double desiredDistance    /* in feet */) {
 
-
     Command cmd = new InstantCommand(() -> {
       johnPIDController.setSetpoint(johnLeftEncoder.getPosition() + desiredDistance);
       johnPIDController.setTolerance(0.25);
