@@ -8,10 +8,14 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 
 import java.util.function.DoubleSupplier;
 
+import com.revrobotics.spark.SparkBase;
 import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.SparkRelativeEncoder;
 import com.revrobotics.spark.config.SparkBaseConfig;
 import com.revrobotics.spark.config.SparkMaxConfig;
+import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -25,11 +29,15 @@ public class ExampleSubsystem extends SubsystemBase {
   private final SparkMax johnLeftMotor = new SparkMax(2, MotorType.kBrushless);
 
   private final SparkMaxConfig johnSMConfig = new SparkMaxConfig();
+  public final SparkRelativeEncoder johnRightEncoder = (SparkRelativeEncoder) johnRightMotor.getEncoder();
+  public final SparkRelativeEncoder johnLeftEncoder = (SparkRelativeEncoder) johnLeftMotor.getEncoder();
+  private final PIDController johnPIDController = new PIDController(0, 0, 0);
 
   DifferentialDrive johnDDrive = new DifferentialDrive(johnLeftMotor, johnRightMotor);
   public ExampleSubsystem() {
     johnSMConfig.inverted(true);
     johnRightMotor.configure(johnSMConfig, null, null);
+    johnSMConfig.idleMode(IdleMode.kBrake);
   }
 
   /**
@@ -63,6 +71,7 @@ boolean left = false;
 
   @Override
   public void periodic() {
+    SmartDashboard.putNumber("Right Encoder Value",johnRightEncoder.getPosition());
     /* 
     if (backward == true) {
       forward = false;
@@ -88,29 +97,52 @@ boolean left = false;
     // This method will be called once per scheduler run during simulation
   }
 
+  public Command johnMove(DoubleSupplier xAxis, DoubleSupplier yAxis) {
+    Command cmd =  new InstantCommand(()-> {
+      johnDDrive.arcadeDrive(-0.5 * yAxis.getAsDouble(), -0.4 * xAxis.getAsDouble());
+    });
 
+    cmd.addRequirements(this);
+
+    return cmd;
+  }
+
+  public Command johnMove10Feet(Double johnRotations) {
+    return new InstantCommand(()-> {
+      
+    });
+  }
+
+  public double johnMoveSetDistance(double desiredDistance    /* in feet */) {
+
+   // johnPIDController.setSetpoint(desiredDistance);
+    //johnPIDController.setTolerance(0.25);
+    return  0; 
+  }
+
+/*
   public Command johnMoveForward(DoubleSupplier xAxis, DoubleSupplier yAxis) {
   
+    return new InstantCommand(()-> {
+      johnDDrive.arcadeDrive(-0.25*(yAxis.getAsDouble()), 0);
+    });
+  }
+
+  public Command johnMoveBackward(DoubleSupplier xAxis, DoubleSupplier yAxis) {
     return new InstantCommand(()-> {
       johnDDrive.arcadeDrive(0.25*(yAxis.getAsDouble()), 0);
     });
   }
 
-  public Command johnMoveBackward() {
+  public Command johnTurnRight(DoubleSupplier xAxis, DoubleSupplier yAxis) {
     return new InstantCommand(()-> {
-      backward = true;
+      johnDDrive.arcadeDrive(0.25, 0.4 * xAxis.getAsDouble());
     });
   }
 
-  public Command johnTurnRight() {
+  public Command johnTurnLeft(DoubleSupplier xAxis, DoubleSupplier yAxis) {
     return new InstantCommand(()-> {
-      johnDDrive.arcadeDrive(0.25, -0.4);
-    });
-  }
-
-  public Command johnTurnLeft() {
-    return new InstantCommand(()-> {
-      johnDDrive.arcadeDrive(0.25, 0.4);
+      johnDDrive.arcadeDrive(0.25, -0.4 * xAxis.getAsDouble());
     });
   }
 

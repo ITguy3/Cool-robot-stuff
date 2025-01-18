@@ -18,6 +18,7 @@ import com.revrobotics.spark.SparkMax;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
@@ -57,16 +58,20 @@ public class RobotContainer {
    
     //johnController.b().onTrue(m_exampleSubsystem.johnMoveForward()).onFalse(m_exampleSubsystem.johnStop());
 
-    //johnController.a().whileTrue(m_exampleSubsystem.johnMoveBackward()).onFalse(m_exampleSubsystem.johnStop());
+    johnController.a().onTrue(m_exampleSubsystem.johnMove10Feet(1.0));
 
     //johnController.x().whileTrue(m_exampleSubsystem.johnTurnLeft()).onFalse(m_exampleSubsystem.johnStop());
 
     //johnController.b().whileTrue(m_exampleSubsystem.johnTurnRight()).onFalse(m_exampleSubsystem.johnStop());
     
-    m_exampleSubsystem.setDefaultCommand(m_exampleSubsystem.johnMoveForward(()->johnController.getLeftX(), ()->johnController.getLeftY()));
+    m_exampleSubsystem.setDefaultCommand(m_exampleSubsystem.johnMove(()->johnController.getRightX(), ()->johnController.getLeftY()));
 
+    //CommandScheduler.getInstance().setDefaultCommand(m_exampleSubsystem,m_exampleSubsystem.johnMove(()->johnController.getLeftX(), ()->johnController.getLeftY()));
     SmartDashboard.putNumber("YAxis", johnController.getLeftX());
-    //SmartDashboard.putNumber("XAxis", johnController.getLeftX());
+    SmartDashboard.putNumber("XAxis", johnController.getLeftX());
+    SmartDashboard.putNumber("johnRightEncoder Position", m_exampleSubsystem.johnRightEncoder.getPosition());
+    SmartDashboard.putNumber("johnLeftEncoder Position", m_exampleSubsystem.johnLeftEncoder.getPosition());
+
   }
 
   /**
