@@ -55,16 +55,17 @@ public class RobotContainer {
 
     // Schedule `exampleMethodCommand` when the Xbox controller's B button is pressed,
     // cancelling on release.
-   
-    //johnController.b().onTrue(m_exampleSubsystem.johnMoveForward()).onFalse(m_exampleSubsystem.johnStop());
+    
+    johnController.b().whileTrue(johnSubsystem.johnRunSYSID(johnSubsystem.johnLeftMotor, "Left Motor"));
+    johnController.x().whileTrue(johnSubsystem.johnRunSYSID(johnSubsystem.johnRightMotor, "Right Moto"));
 
-    johnController.a().onTrue(johnSubsystem.johnMoveSetDistance(20.0));
+    //johnController.a().onTrue(johnSubsystem.johnMoveSetDistance(20.0));
 
     //johnController.x().whileTrue(m_exampleSubsystem.johnTurnLeft()).onFalse(m_exampleSubsystem.johnStop());
 
     //johnController.b().whileTrue(m_exampleSubsystem.johnTurnRight()).onFalse(m_exampleSubsystem.johnStop());
     
-    johnSubsystem.setDefaultCommand(johnSubsystem.johnMove(()->johnController.getRightX(), ()->johnController.getLeftY()).withInterruptBehavior(Command.InterruptionBehavior.kCancelSelf));
+    //johnSubsystem.setDefaultCommand(johnSubsystem.johnMove(()->johnController.getRightX(), ()->johnController.getLeftY()).withInterruptBehavior(Command.InterruptionBehavior.kCancelSelf));
 
     //CommandScheduler.getInstance().setDefaultCommand(m_exampleSubsystem,m_exampleSubsystem.johnMove(()->johnController.getLeftX(), ()->johnController.getLeftY()));
     SmartDashboard.putNumber("YAxis", johnController.getLeftX());
